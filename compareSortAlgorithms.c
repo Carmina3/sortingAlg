@@ -30,34 +30,127 @@ size_t Size(void* ptr)
 // extraMemoryAllocated counts bytes of memory allocated
 void heapSort(int arr[], int n)
 {
+    int i, temp;
+    for (i = n / 2 - 1; i >= 0; i--)
+        heapify(arr, n, i);
+    for (i = n - 1; i > 0; i--) {
+        temp = arr[0];
+        arr[0] = arr[i];
+        arr[i] = temp;
+        heapify(arr, i, 0);
+    }
+}
+void heapify(int arr[], int n, int i)
+{
+    int largest = i;
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+    if (left < n && arr[left] > arr[largest])
+        largest = left;
+    if (right < n && arr[right] > arr[largest])
+        largest = right;
+    if (largest != i) {
+        int temp = arr[i];
+        arr[i] = arr[largest];
+        arr[largest] = temp;
+        heapify(arr, n, largest);
+    }
 }
 
 // implement merge sort
 // extraMemoryAllocated counts bytes of extra memory allocated
 void mergeSort(int pData[], int l, int r)
 {
-	
+    if (l < r) {
+        int m = l + (r - l) / 2;
+        mergeSort(pData, l, m);
+        mergeSort(pData, m + 1, r);
+        merge(pData, l, m, r);
+    }
+}
+void merge(int pData[], int l, int m, int r)
+{
+    int i, j, k;
+    int n1 = m - l + 1;
+    int n2 = r - m;
+    int L[n1], R[n2];
+    for (i = 0; i < n1; i++)
+        L[i] = pData[l + i];
+    for (j = 0; j < n2; j++)
+        R[j] = pData[m + 1 + j];
+    i = 0;
+    j = 0;
+    k = l;
+    while (i < n1 && j < n2) {
+        if (L[i] <= R[j]) {
+            pData[k] = L[i];
+            i++;
+        }
+        else {
+            pData[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+    while (i < n1) {
+        pData[k] = L[i];
+        i++;
+        k++;
+    }
+    while (j < n2) {
+        pData[k] = R[j];
+        j++;
+        k++;
+    }
 }
 
 // implement insertion sort
 // extraMemoryAllocated counts bytes of memory allocated
 void insertionSort(int* pData, int n)
 {
-	
+	int i, key, j;
+    for (i = 1; i < n; i++) {
+        key = pData[i];
+        j = i - 1;
+        while (j >= 0 && pData[j] > key) {
+            pData[j + 1] = pData[j];
+            j = j - 1;
+        }
+        pData[j + 1] = key;
+    }
 }
 
 // implement bubble sort
 // extraMemoryAllocated counts bytes of extra memory allocated
 void bubbleSort(int* pData, int n)
 {
-	
+	int i, j, temp;
+    for (i = 0; i < n - 1; i++) {
+        for (j = 0; j < n - i - 1; j++) {
+            if (pData[j] > pData[j + 1]) {
+                temp = pData[j];
+                pData[j] = pData[j + 1];
+                pData[j + 1] = temp;
+            }
+        }
+    }
 }
 
 // implement selection sort
 // extraMemoryAllocated counts bytes of extra memory allocated
 void selectionSort(int* pData, int n)
 {
-	
+	int i, j, minI;
+    for (i = 0; i < n - 1; i++) {
+        minI = i;
+        for (j = i + 1; j < n; j++) {
+            if (pData[j] < pData[minI])
+                minI = j;
+        }
+        int temp = pData[minI];
+        pData[minI] = pData[i];
+        pData[i] = temp;
+    }
 }
 
 // parses input file to an integer array
@@ -66,14 +159,17 @@ int parseData(char *inputFileName, int **ppData)
 	FILE* inFile = fopen(inputFileName,"r");
 	int dataSz = 0;
 	*ppData = NULL;
-	
+
 	if (inFile)
 	{
 		fscanf(inFile,"%d\n",&dataSz);
 		*ppData = (int *)Alloc(sizeof(int) * dataSz);
 		// Implement parse data block
+		for (int i = 0; i < dataSz; i++) {
+            fscanf(inFile, "%d", &((*ppData)[i]));
+        }
 	}
-	
+
 	return dataSz;
 }
 
@@ -87,7 +183,7 @@ void printArray(int pData[], int dataSz)
 		printf("%d ",pData[i]);
 	}
 	printf("\n\t");
-	
+
 	for (i=sz;i<dataSz;++i)
 	{
 		printf("%d ",pData[i]);
@@ -164,7 +260,7 @@ int main(void)
 		memcpy(pDataCopy, pDataSrc, dataSz*sizeof(int));
 		extraMemoryAllocated = 0;
 		start = clock();
-		heapSort(pDataCopy, 0, dataSz - 1);
+		heapSort(pDataCopy, dataSz - 1);
 		end = clock();
 		cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 		printf("\truntime\t\t\t: %.1lf\n",cpu_time_used);
